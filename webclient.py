@@ -3,6 +3,8 @@ import sys
 
 # usage:
 #   python webclient.py domain_name port:80
+import Http
+
 n = len(sys.argv)
 if (n < 2) or (n > 3):
     print("usage: webclient.py domain_name port:80")
@@ -22,15 +24,11 @@ s = socket.socket()
 s.connect((domain_name, port))
 
 # 3. build and send http request
-simple_http_req = f"GET / HTTP/1.1" \
-                  f"\r\n" \
-                  f"Host: {domain_name}:{port}" \
-                  f"\r\n" \
-                  f"Connection: close" \
-                  f"\r\n" \
-                  f"\r\n"
+req = Http.HttpRequest()
+req.setHeader("Host", f"{domain_name}:{port}")
+req.setHeader("Connection", "close")
 
-req_bytes = simple_http_req.encode(char_encode)
+req_bytes = req.encode()
 s.sendall(req_bytes)
 
 res_bytes = b""
@@ -41,7 +39,8 @@ while True:
         break
     res_bytes += b
 
-res = res_bytes.decode(char_encode)
+# construct a response object
+res = Http.HttpResponse(res_bytes)
 print(res)
 
 # 5. close the socket
